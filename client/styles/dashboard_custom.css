@@ -1,0 +1,100 @@
+@import"https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap";
+
+.uppy-Root {
+    font-family: "Inter", sans-serif;
+}
+
+.uppy-Dashboard-AddFiles{
+    border: none;
+}
+
+[data-uppy-drag-drop-supported=true] .uppy-Dashboard-AddFiles {
+    border: none;
+    margin: 0;
+}
+
+.uppy-Dashboard-AddFiles-title{
+    color: #333338;
+}
+
+.uppy-Dashboard-inner{
+    background-color: #fff;
+    border: none;
+    border-radius: 12px;
+    max-width: 550px;
+}
+
+.uppy-DashboardTab{
+    border: none;
+}
+
+.uppy-DashboardTab-inner{
+    background: none;
+    box-shadow: none;
+    width: 48px;
+    height: 48px;
+    transition: background-color .3s ease;
+}
+
+.uppy-Dashboard-AddFiles-list{
+    padding: 16px;
+}
+
+.uppy-size--md .uppy-Dashboard-AddFiles-list{
+    gap: 4px;
+}
+
+.uppy-DashboardTab-btn{
+    padding: 12px 0;
+    max-height: 52px;
+}
+
+.uppy-DashboardTab-btn:hover {
+    background-color: #05237D0D;
+    border-radius: 6px;
+    transition:  background-color.3s ease;
+}
+
+.uppy-DashboardTab-btn:hover .uppy-DashboardTab-inner {
+    /* background-color: #fff; */
+    transition: background-color .3s ease;
+}
+
+.uppy-DashboardTab-name{
+    color: #55555A;
+}
+
+
+
+.uppy-c-btn-primary {
+    border-radius: 4px;
+    height: 40px;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 500;
+    background-color: #3761E9;    
+}
+
+.uppy-c-btn-primary:not(:disabled):hover {
+    background-color: #1C4ADE;
+}
+
+.uppy-size--md .uppy-c-btn-primary{
+    padding: 0 20px;
+}
+
+.uppy-c-btn-primary:focus{
+
+}
+
+.uppy-Dashboard-AddFiles-title{
+    border-bottom: 1px solid #E6E9F2;
+     font-size: 16px;
+     text-align: start;
+     margin: 0;
+     padding: 20px 16px;
+}
+
+.uppy-Dashboard-close{
+    display: none;
+}
