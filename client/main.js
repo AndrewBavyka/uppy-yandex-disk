@@ -33,4 +33,10 @@ uppy.use(Dashboard, {
 })
 
 
-uppy.use(XHR, { endpoint: 'https://your-domain.com/upload' });
+uppy.use(XHR, {
+  endpoint: 'http://localhost:3020/upload',
+  fieldName: 'file',
+  formData: true,
+  bundle: false, 
+});
+

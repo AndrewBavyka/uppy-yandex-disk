@@ -11,7 +11,9 @@
     "@uppy/locales": "^4.2.0",
     "@uppy/provider-views": "^4.0.1",
     "@uppy/tus": "^4.1.2",
+    "@uppy/xhr-upload": "^4.2.1",
     "cors": "^2.8.5",
+    "multer": "^1.4.5-lts.1",
     "node-fetch": "^3.3.2",
     "preact": "^10.24.3"
   },

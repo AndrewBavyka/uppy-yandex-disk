@@ -12,7 +12,6 @@ function getNextPagePath(data, directoryPath) {
       return `?path=${encodeURIComponent(directoryPath)}&limit=${limit}&offset=${nextOffset}`;
     }
   }
-
   return null;
 }
 
@@ -117,8 +116,8 @@ export default class YandexDisk {
     return data.size || null;
   }
 
-  // Метод для скачивания файла с Яндекс Диска
-  async download({ token, id, query }) {
+  // Метод для получения только ссылки на скачивание файла с Яндекс Диска
+  async downloadLink({ token, id }) {
     const urlResp = await fetch(`${BASE_URL}/download?path=${encodeURIComponent(id)}`, {
       headers: {
         Authorization: `OAuth ${token}`,
@@ -131,31 +130,40 @@ export default class YandexDisk {
     }
 
     const { href: downloadUrl } = await urlResp.json();
+    return downloadUrl;
+  }
 
-    const fileResp = await fetch(downloadUrl, {
+  // Метод download для работы с Companion
+  async download({ token, id }) {
+    const downloadUrl = await this.downloadLink({ token, id });
+    const response = await fetch(downloadUrl, {
       headers: {
         Authorization: `OAuth ${token}`,
       },
     });
 
-    if (!fileResp.ok) {
-      const errorText = await fileResp.text();
-      throw new Error(`Ошибка скачивания файла: ${fileResp.status} ${fileResp.statusText}: ${errorText}`);
+    if (!response.ok) {
+      throw new Error(`Ошибка при загрузке файла: ${response.statusText}`);
     }
 
-    return { stream: Readable.from(fileResp.body) }; // Используем Readable.from
+    return { stream: Readable.fromWeb(response.body) };
   }
 
-
   // Метод для скачивания и сохранения файла локально
-  async downloadAndSave({ token, id, savePath, query }) {
-    // Получаем размер файла
-    const fileSize = await this.size({ token, id, query });
-    console.log(`Размер файла: ${fileSize} байт`);
+  async downloadAndSave({ token, id, savePath }) {
+    const downloadUrl = await this.downloadLink({ token, id });
+    const response = await fetch(downloadUrl, {
+      headers: {
+        Authorization: `OAuth ${token}`,
+      },
+    });
 
-    const { stream } = await this.download({ token, id, query });
+    if (!response.ok) {
+      throw new Error(`Ошибка при загрузке файла: ${response.statusText}`);
+    }
+
     const writeStream = fs.createWriteStream(savePath);
-    stream.pipe(writeStream);
+    response.body.pipe(writeStream);
 
     return new Promise((resolve, reject) => {
       writeStream.on('finish', () => resolve({ success: true, message: 'Файл успешно сохранен' }));
