@@ -3,6 +3,8 @@ import GoogleDrive from '@uppy/google-drive'
 import XHR from '@uppy/xhr-upload';
 import Dashboard from '@uppy/dashboard'
 import YandexDisk from './providers/YandexDisk'
+import Dropbox from '@uppy/dropbox';
+
 import Russian from '@uppy/locales/lib/ru_RU'
 
 import '@uppy/core/dist/style.css'
@@ -23,8 +25,13 @@ uppy.use(YandexDisk, {
   companionAllowedHosts: ["http://localhost:3020", "http://localhost:5173", "https://oauth.yandex.ru"],
 })
 
+uppy.use(Dropbox, {
+  companionUrl: 'http://localhost:3020',
+  companionAllowedHosts: ["http://localhost:3020", "http://localhost:5173", "https://www.dropbox.com"],
+});
+
 uppy.use(Dashboard, {
-  plugins: ['GoogleDrive', 'YandexDisk'],
+  plugins: ['GoogleDrive', 'YandexDisk', 'Dropbox'],
   trigger: '.trigger-button',
   target: 'body',
   showProgressDetails: true,
@@ -32,11 +39,10 @@ uppy.use(Dashboard, {
   proudlyDisplayPoweredByUppy: false,
 })
 
-
 uppy.use(XHR, {
   endpoint: 'http://localhost:3020/upload',
   fieldName: 'file',
   formData: true,
-  bundle: false, 
+  bundle: false,
 });
 

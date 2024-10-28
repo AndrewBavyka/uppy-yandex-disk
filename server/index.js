@@ -38,7 +38,6 @@ app.use(session({
 const uploadDir = path.resolve('uploads');
 if (!existsSync(uploadDir)) {
   mkdirSync(uploadDir);
-  console.log(`Папка ${uploadDir} была создана`);
 }
 
 // Настройка multer для обработки загружаемых файлов
@@ -57,6 +56,12 @@ app.use('/uploads', express.static(uploadDir));
 
 // Настройки Companion для работы с кастомным провайдером
 const companionOptions = {
+  providerOptions: {
+		dropbox: {
+      key: process.env.COMPANION_DROPBOX_KEY,
+      secret: process.env.COMPANION_DROPBOX_SECRET,
+    },
+	},
   customProviders: {
     yandexdisk: {
       config: {
