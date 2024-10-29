@@ -9,7 +9,7 @@ import companion from '@uppy/companion';
 import cors from 'cors';
 import multer from 'multer';
 
-import YandexDisk from './providers/YandexDisk.js';
+import YandexDisk from './providers/yandex-disk/index.js';
 
 dotenv.config();
 
@@ -70,6 +70,7 @@ const companionOptions = {
         oauth: 2,
         key: process.env.COMPANION_DISK_CLIENT_ID,
         secret: process.env.COMPANION_DISK_SECRET,
+        redirect_uri: 'http://localhost:3020/yandexdisk/redirect'
       },
       module: YandexDisk,
     },

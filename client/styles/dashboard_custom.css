@@ -47,12 +47,13 @@
 .uppy-DashboardTab-btn{
     padding: 12px 0;
     max-height: 52px;
+    border-radius: 6px;
+    transition:  background-color.3s ease;
 }
 
 .uppy-DashboardTab-btn:hover {
     background-color: #05237D0D;
-    border-radius: 6px;
-    transition:  background-color.3s ease;
+   
 }
 
 .uppy-DashboardTab-btn:hover .uppy-DashboardTab-inner {
@@ -97,4 +98,11 @@
 
 .uppy-Dashboard-close{
     display: none;
+}
+
+.uppy-Dashboard-innerWrap{
+    border-radius: 12px;
+}
+.uppy-DashboardContent-panel{
+    border-radius: 12px;
 }
