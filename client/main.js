@@ -1,11 +1,8 @@
 import Uppy from '@uppy/core'
-import GoogleDrive from '@uppy/google-drive'
 import XHR from '@uppy/xhr-upload';
 import Dashboard from '@uppy/dashboard'
 import YandexDisk from './providers/YandexDisk'
 import Dropbox from '@uppy/dropbox';
-
-import Russian from '@uppy/locales/lib/ru_RU'
 
 import '@uppy/core/dist/style.css'
 import '@uppy/dashboard/dist/style.css'
@@ -16,9 +13,6 @@ const uppy = new Uppy({
   // locale: Russian
 })
 
-uppy.use(GoogleDrive, {
-  companionUrl: 'http://localhost:3020',
-})
 
 uppy.use(YandexDisk, {
   companionUrl: 'http://localhost:3020',
@@ -31,7 +25,7 @@ uppy.use(Dropbox, {
 });
 
 uppy.use(Dashboard, {
-  plugins: ['GoogleDrive', 'YandexDisk', 'Dropbox'],
+  plugins: ['YandexDisk', 'Dropbox'],
   trigger: '.trigger-button',
   target: 'body',
   showProgressDetails: true,
