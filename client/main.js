@@ -39,4 +39,3 @@ uppy.use(XHR, {
   formData: true,
   bundle: false,
 });
-

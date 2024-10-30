@@ -1,11 +1,7 @@
 /** @jsx h */
 
 import { UIPlugin } from "@uppy/core";
-import {
-  Provider,
-  getAllowedHosts,
-  tokenStorage,
-} from "@uppy/companion-client";
+import { Provider, getAllowedHosts, tokenStorage } from "@uppy/companion-client";
 import { ProviderViews } from "@uppy/provider-views";
 import { h } from "preact";
 
@@ -84,9 +80,6 @@ export default class YandexDisk extends UIPlugin {
       pluginId: this.id,
     });
 
-    // Регистрируем клиент для запросов в Uppy
-    uppy.registerRequestClient(YandexDisk.name, this.provider);
-
     // Локализация плагина
     this.defaultLocale = {
       strings: {
@@ -123,11 +116,6 @@ export default class YandexDisk extends UIPlugin {
   uninstall() {
     this.view.tearDown();
     this.unmount();
-  }
-
-  // Первый рендер компонента — получение списка файлов/папок
-  onFirstRender() {
-    return this.view.getFolder();
   }
 
   // Метод рендеринга интерфейса плагина

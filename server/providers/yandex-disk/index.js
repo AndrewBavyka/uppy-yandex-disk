@@ -1,140 +1,123 @@
-import fs from 'fs';
-import { Readable } from 'stream';
+import got from 'got';
+import { prepareStream } from '@uppy/companion/lib/server/helpers/utils.js';
+import Provider from '@uppy/companion/lib/server/provider/Provider.js';
+
 import { transformData } from './adapter.js';
 
 const BASE_URL = 'https://cloud-api.yandex.net/v1/disk/resources';
 const USER_INFO_URL = 'https://cloud-api.yandex.net/v1/disk/';
 
-export default class YandexDisk {
+export default class YandexDisk extends Provider {
     static version = 2;
+    static oauthProvider = 'yandexdisk';
 
-    static get oauthProvider() {
-        return 'yandexdisk';
-    }
+    allowLocalUrls = true;
 
-    static grantDynamicToUserSession(state) {
-        return state;
-    }
-
-    // Вынести его в adapter
-    // Метод для получения информации о пользователе
+    /**
+     * Получает информацию о пользователе.
+     * 
+     * @param {string} token - OAuth токен пользователя.
+     * @returns {Promise<Object>} Информация о пользователе.
+     */
     async getUserInfo(token) {
-        const resp = await fetch(`${USER_INFO_URL}`, {
-            headers: {
-                Authorization: `OAuth ${token}`,
-            },
+        const { body } = await got(USER_INFO_URL, {
+            headers: { Authorization: `OAuth ${token}` },
+            responseType: 'json',
         });
 
-        if (!resp.ok) {
-            const errorText = await resp.text();
-            throw new Error(`Ошибка получения информации о пользователе: ${resp.status} ${resp.statusText}: ${errorText}`);
-        }
-
-        const userInfo = await resp.json();
-        return userInfo.user;
+        return body.user;
     }
 
-    // Метод для обработки списка файлов и директорий
+    /**
+     * Получает список файлов/папок в указанной директории.
+     * 
+     * @param {Object} params - Параметры запроса.
+     * @param {string} params.token - OAuth токен пользователя.
+     * @param {string} [params.directory='/'] - Директория для получения списка.
+     * @param {Object} [params.query={}] - Дополнительные параметры запроса.
+     * @returns {Promise<Object>} Отформатированный список файлов/папок.
+     */
     async list({ token, directory = '/', query = {} }) {
-        const limit = query.limit || 20;
-        const offset = query.offset || 0;
-        const currentDirectory = query.path || directory;
-        const path = `${BASE_URL}?path=${encodeURIComponent(currentDirectory)}&limit=${limit}&offset=${offset}`;
+        const { limit = 20, offset = 0, path = directory } = query;
+        const url = `${BASE_URL}?path=${encodeURIComponent(path)}&limit=${limit}&offset=${offset}`;
 
-        const resp = await fetch(path, {
-            headers: {
-                Authorization: `OAuth ${token}`,
-            },
+        const { body } = await got(url, {
+            headers: { Authorization: `OAuth ${token}` },
+            responseType: 'json',
         });
 
-        if (!resp.ok) {
-            const errorText = await resp.text();
-            throw new Error(`Ошибка HTTP: ${resp.status} ${resp.statusText}: ${errorText}`);
-        }
-
-        const data = await resp.json();
         const userInfo = await this.getUserInfo(token);
-        const adaptedData = transformData(data, userInfo, currentDirectory);
 
-        return adaptedData;
+        return transformData(body, userInfo, path);
     }
 
-    // Метод для получения размера файла
-    async size({ token, id, query = {} }) {
-        const resp = await fetch(`${BASE_URL}?path=${encodeURIComponent(id)}`, {
-            headers: {
-                Authorization: `OAuth ${token}`,
-            },
+    /**
+     * Получает размер файла по его идентификатору.
+     * 
+     * @param {Object} params - Параметры запроса.
+     * @param {string} params.token - OAuth токен пользователя.
+     * @param {string} params.id - Идентификатор файла.
+     * @returns {Promise<number|null>} Размер файла или null, если не найден.
+     */
+    async size({ token, id }) {
+        const url = `${BASE_URL}?path=${encodeURIComponent(id)}`;
+
+        const { body } = await got(url, {
+            headers: { Authorization: `OAuth ${token}` },
+            responseType: 'json',
         });
 
-        if (!resp.ok) {
-            throw new Error(`Ошибка получения размера файла: ${resp.status} ${resp.statusText}`);
-        }
-
-        const data = await resp.json();
-        return data.size || null;
+        return body.size || null;
     }
 
-    // Метод для получения только ссылки на скачивание файла с Яндекс Диска
+    /**
+     * Получает ссылку для скачивания файла по его идентификатору.
+     * 
+     * @param {Object} params - Параметры запроса.
+     * @param {string} params.token - OAuth токен пользователя.
+     * @param {string} params.id - Идентификатор файла.
+     * @returns {Promise<string>} Ссылка для скачивания файла.
+     */
     async downloadLink({ token, id }) {
-        const urlResp = await fetch(`${BASE_URL}/download?path=${encodeURIComponent(id)}`, {
-            headers: {
-                Authorization: `OAuth ${token}`,
-            },
+        const url = `${BASE_URL}/download?path=${encodeURIComponent(id)}`;
+
+        const { body } = await got(url, {
+            headers: { Authorization: `OAuth ${token}` },
+            responseType: 'json',
         });
 
-        if (!urlResp.ok) {
-            const errorText = await urlResp.text();
-            throw new Error(`Ошибка получения URL для скачивания: ${urlResp.status} ${urlResp.statusText}: ${errorText}`);
-        }
-
-        const { href: downloadUrl } = await urlResp.json();
-        return downloadUrl;
+        return body.href;
     }
 
-    // Метод download для работы с Companion
+    /**
+     * Загружает файл в виде потока по его идентификатору.
+     * 
+     * @param {Object} params - Параметры запроса.
+     * @param {string} params.token - OAuth токен пользователя.
+     * @param {string} params.id - Идентификатор файла.
+     * @returns {Promise<Object>} Объект с потоком данных файла.
+     */
     async download({ token, id }) {
         const downloadUrl = await this.downloadLink({ token, id });
-        const response = await fetch(downloadUrl, {
-            headers: {
-                Authorization: `OAuth ${token}`,
-            },
-        });
+        const stream = got.stream(downloadUrl, { headers: { Authorization: `OAuth ${token}` } });
 
-        if (!response.ok) {
-            throw new Error(`Ошибка при загрузке файла: ${response.statusText}`);
-        }
+        await prepareStream(stream);
 
-        return { stream: Readable.fromWeb(response.body) };
+        // DEBUG
+        stream.on('end', () => console.log('Файл успешно загружен.'));
+        stream.on('error', (error) => console.error(`Ошибка потока при загрузке файла: ${error.message}`));
+
+        return { stream };
     }
 
-    // Метод для скачивания и сохранения файла локально
-    async downloadAndSave({ token, id, savePath }) {
-        const downloadUrl = await this.downloadLink({ token, id });
-        const response = await fetch(downloadUrl, {
-            headers: {
-                Authorization: `OAuth ${token}`,
-            },
-        });
-
-        if (!response.ok) {
-            throw new Error(`Ошибка при загрузке файла: ${response.statusText}`);
-        }
-
-        const writeStream = fs.createWriteStream(savePath);
-        response.body.pipe(writeStream);
-
-        return new Promise((resolve, reject) => {
-            writeStream.on('finish', () => resolve({ success: true, message: 'Файл успешно сохранен' }));
-            writeStream.on('error', reject);
-        });
-    }
-
+    /**
+     * Завершает сессию пользователя, удаляя токен из хранилища.
+     * 
+     * @returns {Promise<Object>} Результат выхода.
+     */
     async logout() {
-        const className = this.constructor[0];
-
         if (this.storage) {
-            await this.storage.removeItem(`companion-${className}-auth-token`);
+            await this.storage.removeItem(`companion-${this.constructor.name}-auth-token`);
         }
 
         return { success: true };

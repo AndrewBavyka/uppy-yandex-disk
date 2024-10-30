@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 import express from 'express';
 import bodyParser from 'body-parser';
 import session from 'express-session';
-import companion from '@uppy/companion';
+import companion from '@uppy/companion';]
 import cors from 'cors';
 import multer from 'multer';
 
@@ -15,16 +15,16 @@ dotenv.config();
 
 const app = express();
 
-const corsOptions = {
-  origin: [
-    'http://localhost:5173',
-    'http://localhost:3020',
-    'https://oauth.yandex.ru',
-  ],
-  credentials: true, // Разрешить передачу куков и других учетных данных 
-};
+// const corsOptions = {
+//   origin: [
+//     'http://localhost:5173',
+//     'http://localhost:3020',
+//     'https://oauth.yandex.ru',
+//   ],
+//   credentials: true, // Разрешить передачу куков и других учетных данных 
+// };
 
-app.use(cors(corsOptions));
+// app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
 // Настройка сессии 
@@ -80,11 +80,7 @@ const companionOptions = {
     protocol: 'http',
   },
   filePath: mkdtempSync(path.join(os.tmpdir(), 'companion-')),
-  corsOrigins: [
-    'http://localhost:5173',
-    'http://localhost:3020',
-    'https://oauth.yandex.ru',
-  ],
+  corsOrigins: true,
   uploadUrls: ['http://localhost:3020/upload'],
   secret: 'some-secret',
   debug: true,
